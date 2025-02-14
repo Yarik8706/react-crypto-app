@@ -1,0 +1,41 @@
+﻿import {createContext, useEffect, useState} from "react";
+import {fakeFetchCrypto, fakeFetchCryptoAssets} from "../api.js";
+import {percentDifference} from "../utils.js";
+
+const CryptoContext = createContext({
+  crypto: [],
+  assets: [],
+  loading: false
+});
+
+export function CryptoContextProvider({ children }) {
+  const [loading, setLoading] = useState(false);
+  const [crypto, setCrypto] = useState({});
+  const [cryptoAssets, setCryptoAssets] = useState([]);
+
+  useEffect(() => {
+    async function preload() {
+      setLoading(true)
+      const {result} = await fakeFetchCrypto();
+      const assets = await fakeFetchCryptoAssets();
+
+      setCrypto(result)
+      setCryptoAssets(assets.map(asset => {
+        const coin = result.find(coin => coin.id === asset.id)
+
+        return {
+          grow: asset.price < coin.price,
+          growPercent: percentDifference(asset.price, coin.price),
+          totalAmount: asset.amount * coin.price,
+          totalProfit: asset.amount * (asset.price - coin.price),
+          ...asset
+        }
+      }))
+      setLoading(false)
+    }
+
+    preload()
+  }, []);
+  
+  return <CryptoContext.Provider value={{ loading, crypto, cryptoAssets }}>{children}</CryptoContext.Provider>
+}

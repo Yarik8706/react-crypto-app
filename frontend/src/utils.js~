@@ -1,0 +1,7 @@
+﻿export function percentDifference(a, b) {
+  return -(((a - b) / (a+b)/2) * 100).toFixed(2);
+}
+
+export function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
